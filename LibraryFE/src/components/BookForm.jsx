@@ -103,6 +103,12 @@ function BookForm({
     event.preventDefault();
     if (!validate()) return;
 
+    const title = formData.title.trim();
+    const author = formData.author.trim();
+    const category = formData.category.trim();
+    const publisher = formData.publisher.trim();
+    const description = formData.description.trim();
+
     onSubmit({
       ...formData,
       publishedYear: Number(formData.publishedYear),
