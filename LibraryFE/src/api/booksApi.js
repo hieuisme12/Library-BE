@@ -9,8 +9,8 @@ function normalizeBook(book) {
 
     return {
         ...book,
-        publishedYear: book.publishedYear ? ? book.published_year ? ? "",
-        imageUrl: book.imageUrl ? ? book.image_url ? ? "",
+        publishedYear: book.publishedYear ?? book.published_year ?? "",
+        imageUrl: book.imageUrl ?? book.image_url ?? "",
     };
 }
 

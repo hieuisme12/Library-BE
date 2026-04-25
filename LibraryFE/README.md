@@ -33,7 +33,7 @@ npm install
 2. Tao file .env tu .env.example va cau hinh API
 
 ```env
-VITE_API_BASE_URL=http://localhost:8080
+VITE_API_BASE_URL=http://localhost:8083
 ```
 
 3. Chay dev server

@@ -9,6 +9,8 @@ const initialValues = {
     password: "",
 };
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function LoginPage() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -32,19 +34,21 @@ function LoginPage() {
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        setErrors((prev) => ({ ...prev, [name]: "" }));
+        setErrors((prev) => ({ ...prev, [name]: "", ...(name === "email" ? { username: "" } : null) }));
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         const nextErrors = {};
-        if (!formData.email.trim()) {
-            nextErrors.email = "Email là bắt buộc";
-        }
-        if (!formData.password.trim()) {
-            nextErrors.password = "Mật khẩu là bắt buộc";
-        }
+        const email = formData.email.trim();
+        const password = formData.password;
+
+        if (!email) nextErrors.email = "Email là bắt buộc";
+        else if (!emailPattern.test(email)) nextErrors.email = "Email không đúng định dạng";
+
+        if (!password.trim()) nextErrors.password = "Mật khẩu là bắt buộc";
+        else if (password.length < 6) nextErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
 
         if (Object.keys(nextErrors).length > 0) {
             setErrors(nextErrors);
@@ -53,7 +57,7 @@ function LoginPage() {
 
         try {
             setBusy(true);
-            await login(formData);
+            await login({ email, password });
             const fromPath = location.state?.from?.pathname || "/books";
             navigate(fromPath, { replace: true });
         } catch (error) {
@@ -96,7 +100,7 @@ function LoginPage() {
                     <label>
                         <span>Email</span>
                         <input name="email" type="email" value={formData.email} onChange={handleChange} />
-                        {errors.email && <small>{errors.email}</small>}
+                        {(errors.email || errors.username) && <small>{errors.email || errors.username}</small>}
                     </label>
 
                     <label>
@@ -111,7 +115,7 @@ function LoginPage() {
 
                     <div className="auth-links">
                         <Link to="/register">Đăng ký sinh viên</Link>
-                        <Link to="/register/bookkeeper">Đăng ký BOOK_KEEPER</Link>
+                        <Link to="/register/bookkeeper">Đăng ký người quản lý sách</Link>
                     </div>
                 </form>
             </section>

@@ -52,15 +52,15 @@ export function decodeJwtPayload(token) {
 
 export function getRoleFromToken(token) {
     const payload = decodeJwtPayload(token);
-    return normalizeRole(payload ? .role ? ? payload ? .roles ? ? payload ? .authorities ? ? payload ? .scope);
+    return normalizeRole(payload ?.role ?? payload ?.roles ?? payload ?.authorities ?? payload ?.scope);
 }
 
 export function getAccessToken() {
-    return getStorage() ? .getItem(ACCESS_TOKEN_KEY) || "";
+    return getStorage() ?.getItem(ACCESS_TOKEN_KEY) || "";
 }
 
 export function getRefreshToken() {
-    return getStorage() ? .getItem(REFRESH_TOKEN_KEY) || "";
+    return getStorage() ?.getItem(REFRESH_TOKEN_KEY) || "";
 }
 
 export function setStoredTokens({ accessToken, refreshToken }) {

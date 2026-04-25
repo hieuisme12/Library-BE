@@ -20,6 +20,16 @@ public class JwtService {
             @Value("${app.jwt.secret}") String secret,
             @Value("${app.jwt.access-token-seconds:900}") long accessTokenSeconds
     ) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException(
+                    "Missing JWT secret. Set env var APP_JWT_SECRET or property 'app.jwt.secret'."
+            );
+        }
+        if (secret.length() < 32) {
+            throw new IllegalStateException(
+                    "JWT secret is too short (min 32 chars for HS256). Provide a longer APP_JWT_SECRET/app.jwt.secret."
+            );
+        }
         this.key = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
         this.accessTokenSeconds = accessTokenSeconds;
     }

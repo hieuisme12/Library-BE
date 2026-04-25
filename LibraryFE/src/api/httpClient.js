@@ -48,8 +48,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
     (response) => response,
     async(error) => {
-        const response = error ? .response;
-        const originalRequest = error ? .config;
+        const response = error ?.response;
+        const originalRequest = error ?.config;
 
         if (!response || response.status !== 401 || !originalRequest || isAuthEndpoint(originalRequest.url || "")) {
             return Promise.reject(error);

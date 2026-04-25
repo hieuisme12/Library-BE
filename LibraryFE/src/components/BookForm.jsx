@@ -11,6 +11,19 @@ const defaultValues = {
   imageUrl: "",
 };
 
+function isValidHttpUrl(value) {
+  const trimmed = String(value || "").trim();
+  if (!trimmed) return true;
+  if (!/^https?:\/\//i.test(trimmed)) return false;
+
+  try {
+    new URL(trimmed);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function BookForm({
   initialValues,
   onSubmit,
@@ -39,25 +52,47 @@ function BookForm({
   const validate = () => {
     const nextErrors = {};
 
-    if (!formData.title.trim()) nextErrors.title = "Tên sách là bắt buộc";
-    if (!formData.author.trim()) nextErrors.author = "Tác giả là bắt buộc";
-    if (!formData.category.trim()) nextErrors.category = "Thể loại là bắt buộc";
-    if (!formData.publisher.trim()) nextErrors.publisher = "Nhà xuất bản là bắt buộc";
+    const title = formData.title.trim();
+    const author = formData.author.trim();
+    const category = formData.category.trim();
+    const publisher = formData.publisher.trim();
+    const description = formData.description.trim();
+
+    if (!title) nextErrors.title = "Tên sách là bắt buộc";
+    else if (title.length < 2) nextErrors.title = "Tên sách phải có ít nhất 2 ký tự";
+    else if (title.length > 150) nextErrors.title = "Tên sách không được vượt quá 150 ký tự";
+
+    if (!author) nextErrors.author = "Tác giả là bắt buộc";
+    else if (author.length < 2) nextErrors.author = "Tác giả phải có ít nhất 2 ký tự";
+    else if (author.length > 120) nextErrors.author = "Tác giả không được vượt quá 120 ký tự";
+
+    if (!category) nextErrors.category = "Thể loại là bắt buộc";
+    else if (category.length > 80) nextErrors.category = "Thể loại không được vượt quá 80 ký tự";
+
+    if (!publisher) nextErrors.publisher = "Nhà xuất bản là bắt buộc";
+    else if (publisher.length > 120) nextErrors.publisher = "Nhà xuất bản không được vượt quá 120 ký tự";
 
     const publishedYear = Number(formData.publishedYear);
-    if (!formData.publishedYear || Number.isNaN(publishedYear)) {
-      nextErrors.publishedYear = "Năm xuất bản không hợp lệ";
+    const yearText = String(formData.publishedYear ?? "").trim();
+    const currentYear = new Date().getFullYear();
+    if (!yearText || Number.isNaN(publishedYear) || !Number.isInteger(publishedYear)) {
+      nextErrors.publishedYear = "Năm xuất bản phải là số nguyên";
+    } else if (publishedYear < 1000 || publishedYear > currentYear + 1) {
+      nextErrors.publishedYear = `Năm xuất bản phải trong khoảng 1000 - ${currentYear + 1}`;
     }
 
     const quantity = Number(formData.quantity);
-    if (formData.quantity === "" || Number.isNaN(quantity) || quantity < 0) {
-      nextErrors.quantity = "Số lượng phải là số >= 0";
+    const quantityText = String(formData.quantity ?? "").trim();
+    if (quantityText === "" || Number.isNaN(quantity) || !Number.isInteger(quantity) || quantity < 0) {
+      nextErrors.quantity = "Số lượng phải là số nguyên >= 0";
     }
 
-    if (!formData.description.trim()) nextErrors.description = "Mô tả là bắt buộc";
+    if (!description) nextErrors.description = "Mô tả là bắt buộc";
+    else if (description.length < 10) nextErrors.description = "Mô tả phải có ít nhất 10 ký tự";
+    else if (description.length > 2000) nextErrors.description = "Mô tả không được vượt quá 2000 ký tự";
 
-    if (formData.imageUrl && !/^https?:\/\//i.test(formData.imageUrl.trim())) {
-      nextErrors.imageUrl = "Đường dẫn ảnh phải bắt đầu bằng http:// hoặc https://";
+    if (!isValidHttpUrl(formData.imageUrl)) {
+      nextErrors.imageUrl = "Đường dẫn ảnh phải là URL hợp lệ (http/https)";
     }
 
     setErrors(nextErrors);
@@ -72,11 +107,11 @@ function BookForm({
       ...formData,
       publishedYear: Number(formData.publishedYear),
       quantity: Number(formData.quantity),
-      title: formData.title.trim(),
-      author: formData.author.trim(),
-      category: formData.category.trim(),
-      publisher: formData.publisher.trim(),
-      description: formData.description.trim(),
+      title,
+      author,
+      category,
+      publisher,
+      description,
       imageUrl: formData.imageUrl.trim(),
     });
   };

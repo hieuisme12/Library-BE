@@ -13,6 +13,8 @@ const initialValues = {
     inviteCode: "",
 };
 
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function RegisterBookKeeperPage() {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
@@ -28,20 +30,32 @@ function RegisterBookKeeperPage() {
     const handleChange = (event) => {
         const { name, value } = event.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
-        setErrors((prev) => ({ ...prev, [name]: "" }));
+        setErrors((prev) => ({ ...prev, [name]: "", ...(name === "email" ? { username: "" } : null) }));
     };
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         const nextErrors = {};
-        if (!formData.fullName.trim()) nextErrors.fullName = "Họ và tên là bắt buộc";
-        if (!formData.email.trim()) nextErrors.email = "Email là bắt buộc";
-        if (!formData.password.trim()) nextErrors.password = "Mật khẩu là bắt buộc";
-        if (formData.password !== formData.confirmPassword) {
-            nextErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
-        }
-        if (!formData.inviteCode.trim()) nextErrors.inviteCode = "Invite code là bắt buộc";
+        const fullName = formData.fullName.trim();
+        const email = formData.email.trim();
+        const password = formData.password;
+        const confirmPassword = formData.confirmPassword;
+        const inviteCode = formData.inviteCode.trim();
+
+        if (!fullName) nextErrors.fullName = "Họ và tên là bắt buộc";
+        else if (fullName.length < 2) nextErrors.fullName = "Họ và tên phải có ít nhất 2 ký tự";
+
+        if (!email) nextErrors.email = "Email là bắt buộc";
+        else if (!emailPattern.test(email)) nextErrors.email = "Email không đúng định dạng";
+
+        if (!password.trim()) nextErrors.password = "Mật khẩu là bắt buộc";
+        else if (password.length < 6) nextErrors.password = "Mật khẩu phải có ít nhất 6 ký tự";
+
+        if (!confirmPassword.trim()) nextErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
+        else if (password !== confirmPassword) nextErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
+
+        if (!inviteCode) nextErrors.inviteCode = "Invite code là bắt buộc";
 
         if (Object.keys(nextErrors).length > 0) {
             setErrors(nextErrors);
@@ -51,14 +65,14 @@ function RegisterBookKeeperPage() {
         try {
             setBusy(true);
             await registerBookKeeper({
-                fullName: formData.fullName.trim(),
-                email: formData.email.trim(),
-                password: formData.password,
-                inviteCode: formData.inviteCode.trim(),
+                fullName,
+                email,
+                password,
+                inviteCode,
             });
             navigate("/login", {
                 replace: true,
-                state: { notice: { type: "success", message: "Đăng ký BOOK_KEEPER thành công. Vui lòng đăng nhập." } },
+                state: { notice: { type: "success", message: "Đăng ký người quản lý sách thành công. Vui lòng đăng nhập." } },
             });
         } catch (error) {
             const errorInfo = getApiErrorDetails(error);
@@ -85,7 +99,7 @@ function RegisterBookKeeperPage() {
                     <div className="form-header auth-header">
                         <div>
                             <p className="eyebrow">Đăng ký</p>
-                            <h2>Đăng ký BOOK_KEEPER</h2>
+                            <h2>Đăng ký người quản lý sách</h2>
                         </div>
                         <Link className="btn ghost" to="/login">
                             Quay lại đăng nhập
@@ -103,7 +117,7 @@ function RegisterBookKeeperPage() {
                     <label>
                         <span>Email</span>
                         <input name="email" type="email" value={formData.email} onChange={handleChange} />
-                        {errors.email && <small>{errors.email}</small>}
+                        {(errors.email || errors.username) && <small>{errors.email || errors.username}</small>}
                     </label>
 
                     <label>
@@ -130,7 +144,7 @@ function RegisterBookKeeperPage() {
                     </label>
 
                     <button className="btn primary" type="submit" disabled={busy}>
-                        {busy ? "Đang tạo tài khoản..." : "Đăng ký BOOK_KEEPER"}
+                        {busy ? "Đang tạo tài khoản..." : "Đăng ký người quản lý sách"}
                     </button>
                 </form>
             </section>

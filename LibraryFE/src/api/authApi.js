@@ -12,13 +12,16 @@ const authClient = axios.create({
 
 function normalizeSession(data) {
     return {
-        accessToken: data ? .accessToken ? ? data ? .access_token ? ? "",
-        refreshToken: data ? .refreshToken ? ? data ? .refresh_token ? ? "",
+        accessToken: data ?.accessToken ?? data ?.access_token ?? "",
+        refreshToken: data ?.refreshToken ?? data ?.refresh_token ?? "",
     };
 }
 
 export async function login(credentials) {
-    const response = await authClient.post("/api/auth/login", credentials);
+    const response = await authClient.post("/api/auth/login", {
+        username: credentials?.username ?? credentials?.email ?? "",
+        password: credentials?.password ?? "",
+    });
     return normalizeSession(response.data);
 }
 
@@ -33,18 +36,26 @@ export async function logoutSession(refreshToken) {
 
 export async function registerStudent(payload) {
     const response = await authClient.post("/api/auth/register", {
-        ...payload,
-        role: "STUDENT",
+        username: payload?.username ?? payload?.email ?? "",
+        password: payload?.password ?? "",
     });
 
     return response.data;
 }
 
 export async function registerBookKeeper(payload) {
-    const response = await authClient.post("/api/auth/register/bookkeeper", {
-        ...payload,
-        role: "BOOK_KEEPER",
-    });
+    const response = await authClient.post(
+        "/api/auth/register-bookkeeper",
+        {
+            username: payload?.username ?? payload?.email ?? "",
+            password: payload?.password ?? "",
+        },
+        {
+            headers: {
+                "X-Invite-Code": payload?.inviteCode ?? "",
+            },
+        }
+    );
 
     return response.data;
 }
